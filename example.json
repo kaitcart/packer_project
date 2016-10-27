@@ -1,0 +1,39 @@
+{
+  "builders": [{
+    "type": "virtualbox-iso",
+    "guest_os_type": "RedHat_64",
+    "iso_checksum_type": "md5",
+    "iso_url": "http://mirror.confluxtech.com/centos/6.8/isos/x86_64/CentOS-6.8-x86_64-minimal.iso",
+    "iso_checksum": "0ca12fe5f28c2ceed4f4084b41ff8a0b",
+    "ssh_username": "vagrant",
+    "ssh_password": "vagrant",
+    "shutdown_command": "sudo -S shutdown -P now",
+    "http_directory": "http",
+    "boot_command": [
+      "<wait><esc><esc>",
+      "linux ks=http://{{.HTTPIP}}:{{.HTTPPort}}/kickstart<enter>",
+      "<ctrl><alt><delete>"
+    ]
+  }],
+  "post-processors": ["vagrant"],
+  "provisioners": [{
+    "type": "shell",
+    "inline": [
+      "sleep 30",
+      "sudo mkdir /tmp/vboxguest",
+      "sudo mount -t iso9660 -o loop /home/vagrant/VBoxGuestAdditions.iso /tmp/vboxguest",
+      "sudo ln -s /opt/VBoxGuestAdditions-4.3.10/lib/VBoxGuestAdditions /usr/lib/VBoxGuestAdditions",
+      "sudo yum -y groupinstall 'Development Tools'",
+      "cd /tmp/vboxguest",
+      "sudo ./VBoxLinuxAdditions.run",
+      "cd /tmp",
+      "sudo umount /tmp/vboxguest",
+      "sudo rmdir /tmp/vboxguest",
+      "rm /home/vagrant/VBoxGuestAdditions.iso",
+      "sudo yum install -y curl",
+      "echo Image Provisioned!"
+    ]},{
+    "type": "shell",
+    "script": "setup.sh"
+  }]
+}
